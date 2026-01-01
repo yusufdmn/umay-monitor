@@ -8,7 +8,7 @@ services:
         REACT_APP_SIGNALR_HUB_URL: ${UMAY_API_URL}/monitoring-hub
         REACT_APP_TITLE: "Umay Monitor"
     ports:
-      - "3000:5000"
+      - "3000:3000"
     depends_on:
       - api
     restart: always
@@ -18,12 +18,12 @@ services:
     build:
       context: ./backend
     ports:
-      - "5123:5000"  # External 5123 -> Internal 5000
+      - "5123:5123"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       
       # 1. ALIGN PORT WITH APPSETTINGS (Fixes the "Connection Reset" bug)
-      ASPNETCORE_URLS: http://+:5000 
+      ASPNETCORE_URLS: http://+:5123 
       
       # 2. INJECT CORS
       ALLOWED_ORIGINS: ${UMAY_DASHBOARD_URL}

@@ -254,8 +254,8 @@ app.Use(async (context, next) =>
 });
 
 app.Logger.LogInformation("Server starting...");
-app.Logger.LogInformation("HTTP endpoint: http://localhost:5000");
-app.Logger.LogInformation("WebSocket endpoint (agents): ws://localhost:5000");
+app.Logger.LogInformation("HTTP endpoint: http://localhost:5123");
+app.Logger.LogInformation("WebSocket endpoint (agents): ws://localhost:5123");
 app.Logger.LogInformation("SignalR Hub (frontend): /monitoring-hub");
 
 await app.RunAsync();

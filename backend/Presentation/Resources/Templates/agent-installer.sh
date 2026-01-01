@@ -10,13 +10,13 @@ DOMAIN="{{DOMAIN}}"
 # Agent always uses ws:// and http:// (nginx handles SSL if needed)
 if [[ "$DOMAIN" == "localhost" || "$DOMAIN" == "127.0.0.1" || "$DOMAIN" == localhost:* ]]; then
     echo "🔧 Detected Localhost Environment."
-    DEB_URL="http://${DOMAIN}:5000/downloads/super-agent_amd64.deb"
-    WS_URI="ws://${DOMAIN}:5000"
+    DEB_URL="http://${DOMAIN}:5123/downloads/super-agent_amd64.deb"
+    WS_URI="ws://${DOMAIN}:5123"
 else
     echo "☁️ Detected Public Environment."
     # Always use ws:// - nginx/apache handles SSL termination
     DEB_URL="https://${DOMAIN}/downloads/super-agent_amd64.deb"
-    WS_URI="wss://${DOMAIN}:5000"
+    WS_URI="wss://${DOMAIN}:5123"
 fi
 
 echo "🚀 Starting Super-Agent Installation..."
