@@ -31,7 +31,6 @@ else
 
     echo ""
     echo "--- API Configuration ---"
-    # Smart default: api. + the dashboard domain
     DEFAULT_API="api.${CLEAN_DASH}"
     
     echo "The standard API domain is: ${DEFAULT_API}"
@@ -56,11 +55,15 @@ else
 fi
 
 echo ""
+echo "-> Saving configuration to .env file..."
+# --- CRITICAL FIX: Write to .env instead of exporting ---
+# This ensures variables persist for Docker forever
+cat <<EOF > .env
+UMAY_API_URL=${FULL_API_URL}
+UMAY_DASHBOARD_URL=${DASHBOARD_URL}
+EOF
+
 echo "-> Building containers..."
-export UMAY_API_URL="${FULL_API_URL}"
-
-export UMAY_DASHBOARD_URL="${DASHBOARD_URL}
-
 docker compose up -d --build
 
 echo ""
