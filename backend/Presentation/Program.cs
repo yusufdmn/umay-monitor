@@ -15,6 +15,17 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = 
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+       
+    // Trust all proxies (since you are running in Docker, the IP changes)
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var certificateOptions = builder.Configuration
     .GetSection(CertificateOptions.SectionName)
     .Get<CertificateOptions>();
@@ -161,6 +172,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 await DatabaseSeeder.SeedAsync(app.Services);
 
