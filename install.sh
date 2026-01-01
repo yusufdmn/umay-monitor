@@ -6,7 +6,7 @@ echo "      UMAY MONITOR - Setup Wizard"
 echo "=========================================="
 echo ""
 echo "How will you access this server?"
-echo "1) Localhost (Testing on this machine)"
+echo "1) Localhost"
 echo "2) Domain Name (e.g. example.com)"
 read -p "Select [1/2]: " MODE
 
