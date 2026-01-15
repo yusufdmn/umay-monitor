@@ -273,62 +273,6 @@ const SettingsPage = () => {
       )}
       {testMsg && <div className="notice">{testMsg}</div>}
 
-      {/* Change Password Card */}
-      <div className="settings-card">
-        <div className="settings-card-header">
-          <div className="settings-card-title-area">
-            <span className="settings-card-icon">🔐</span>
-            <div>
-              <h2 className="settings-card-title">Change Password</h2>
-              <p className="settings-card-subtitle">Update your admin password</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="settings-card-body">
-          <div className="settings-form-group">
-            <label className="settings-label">Current Password</label>
-            <input
-              type="password"
-              className="settings-input"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-            />
-          </div>
-          
-          <div className="settings-form-group">
-            <label className="settings-label">New Password</label>
-            <input
-              type="password"
-              className="settings-input"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-            />
-          </div>
-          
-          <div className="settings-form-group">
-            <label className="settings-label">Confirm New Password</label>
-            <input
-              type="password"
-              className="settings-input"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-            />
-          </div>
-          
-          <button
-            className="btn btn-primary"
-            onClick={handleChangePassword}
-            disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
-          >
-            {changingPassword ? 'Changing...' : 'Change Password'}
-          </button>
-        </div>
-      </div>
-
       {/* Agent Configuration */}
       <AgentConfigPanel />
 
@@ -556,6 +500,62 @@ const SettingsPage = () => {
             </div>
           </>
         )}
+      </div>
+
+      {/* Change Password Card */}
+      <div className="settings-card">
+        <div className="settings-card-header">
+          <div className="settings-card-title-area">
+            <span className="settings-card-icon">🔐</span>
+            <div>
+              <h2 className="settings-card-title">Change Password</h2>
+              <p className="settings-card-subtitle">Update your admin password</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="settings-card-body">
+          <div className="settings-form-group">
+            <label className="settings-label">Current Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password"
+            />
+          </div>
+          
+          <div className="settings-form-group">
+            <label className="settings-label">New Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+            />
+          </div>
+          
+          <div className="settings-form-group">
+            <label className="settings-label">Confirm New Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm new password"
+            />
+          </div>
+          
+          <button
+            className="btn btn-primary"
+            onClick={handleChangePassword}
+            disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+          >
+            {changingPassword ? 'Changing...' : 'Change Password'}
+          </button>
+        </div>
       </div>
     </div>
   );
