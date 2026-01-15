@@ -259,22 +259,28 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 <a href="https://github.com/yasinkucukk">
 <img src="https://github.com/yasinkucukk.png" width="100px;" alt="Yasin Küçük"/><br />
 <sub><b>Yasin Küçük</b></sub>
-</a>
+</a><br/>
+<sub>Frontend Development</sub>
 </td>
+
 <td align="center">
 <a href="https://github.com/ItsYusufDemir">
 <img src="https://github.com/ItsYusufDemir.png" width="100px;" alt="Yusuf Demir"/><br />
 <sub><b>Yusuf Demir</b></sub>
-</a>
+</a><br/>
+<sub>DevOps & Agent Development</sub>
 </td>
+
 <td align="center">
 <a href="https://github.com/yusufdmn">
 <img src="https://github.com/yusufdmn.png" width="100px;" alt="Yusuf Duman"/><br />
 <sub><b>Yusuf Duman</b></sub>
-</a>
+</a><br/>
+<sub>Backend Development</sub>
 </td>
 </tr>
 </table>
+
 
 *Supervisor: Assoc. Prof. Ömer Korçak*
 
