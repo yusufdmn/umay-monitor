@@ -32,29 +32,29 @@ public class AuthService : IAuthService
 
     /// <summary>
     /// Authenticates a user with email and password.
+    /// Since we only support a single admin user, email is optional.
     /// </summary>
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        if (string.IsNullOrWhiteSpace(request.Password))
         {
-            _logger.LogWarning("Login attempt with empty email or password");
+            _logger.LogWarning("Login attempt with empty password");
             return null;
         }
 
-        // Find user by email
-        var user = await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email);
+        // Find the admin user (we only have one user)
+        var user = await _dbContext.Users.FirstOrDefaultAsync();
 
         if (user == null)
         {
-            _logger.LogWarning("Login attempt for non-existent user: {Email}", request.Email);
+            _logger.LogWarning("No admin user found in database");
             return null;
         }
 
         // Check if user is active
         if (!user.IsActive)
         {
-            _logger.LogWarning("Login attempt for inactive user: {Email}", request.Email);
+            _logger.LogWarning("Login attempt for inactive user");
             return null;
         }
 
@@ -63,7 +63,7 @@ public class AuthService : IAuthService
         
         if (!isPasswordValid)
         {
-            _logger.LogWarning("Invalid password attempt for user: {Email}", request.Email);
+            _logger.LogWarning("Invalid password attempt");
             return null;
         }
 
@@ -90,5 +90,45 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
+    }
+
+    /// <summary>
+    /// Changes the admin user's password.
+    /// </summary>
+    public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+        {
+            _logger.LogWarning("Change password attempt with empty password");
+            return false;
+        }
+
+        if (newPassword.Length < 4)
+        {
+            _logger.LogWarning("New password too short");
+            return false;
+        }
+
+        // Find the admin user
+        var user = await _dbContext.Users.FirstOrDefaultAsync();
+        if (user == null)
+        {
+            _logger.LogWarning("No admin user found");
+            return false;
+        }
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
+        {
+            _logger.LogWarning("Change password failed: incorrect current password");
+            return false;
+        }
+
+        // Update password
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Password changed successfully");
+        return true;
     }
 }

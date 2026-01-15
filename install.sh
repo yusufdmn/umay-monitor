@@ -5,18 +5,41 @@ echo "=========================================="
 echo "      UMAY MONITOR - Setup Wizard"
 echo "=========================================="
 echo ""
-echo "How will you access this server?"
-echo "1) Localhost"
+echo "How will you access the dashboard?"
+echo "1) Local Network (IP-based access)"
 echo "2) Domain Name (e.g. example.com)"
 read -p "Select [1/2]: " MODE
 
 if [[ "$MODE" == "1" ]]; then
-    # --- Localhost Mode ---
+    # --- Local Network Mode ---
     FULL_API_URL="http://localhost:5123"
     DASHBOARD_URL="http://localhost:3000"
     
     echo ""
-    echo "-> Mode: Localhost"
+    echo "-> Mode: Local Network"
+    
+    # Detect default LAN IP
+    DEFAULT_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [[ -z "$DEFAULT_IP" ]]; then
+        DEFAULT_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}')
+    fi
+    
+    echo ""
+    echo "--- Agent Connection Setup ---"
+    echo "Agents on OTHER machines need your server's LAN IP to connect."
+    if [[ -n "$DEFAULT_IP" ]]; then
+        echo "Detected LAN IP: ${DEFAULT_IP}"
+        read -p "Press ENTER to use this IP, or type a different IP/hostname: " CUSTOM_IP
+        if [[ -z "$CUSTOM_IP" ]]; then
+            AGENT_SERVER_URL="ws://${DEFAULT_IP}:5123"
+        else
+            AGENT_SERVER_URL="ws://${CUSTOM_IP}:5123"
+        fi
+    else
+        read -p "Enter your server's LAN IP (e.g. 192.168.1.100): " CUSTOM_IP
+        AGENT_SERVER_URL="ws://${CUSTOM_IP}:5123"
+    fi
+    echo "-> Agent WebSocket URL: ${AGENT_SERVER_URL}"
 
 else
     # --- Domain Mode ---
@@ -47,11 +70,14 @@ else
     # HTTPS is assumed for domains
     FULL_API_URL="https://${FINAL_API_DOMAIN}"
     DASHBOARD_URL="https://${CLEAN_DASH}"
+    # For domain mode, agents connect via the same API domain with WSS
+    AGENT_SERVER_URL="wss://${FINAL_API_DOMAIN}"
 
     echo ""
     echo "-> Mode: Domain"
     echo "-> Dashboard: ${DASHBOARD_URL}"
     echo "-> API:       ${FULL_API_URL}"
+    echo "-> Agent WS:  ${AGENT_SERVER_URL}"
 fi
 
 # --- SECRET GENERATION (ADDED) ---
@@ -67,6 +93,7 @@ echo "-> Saving configuration to .env file..."
 cat <<EOF > .env
 UMAY_API_URL=${FULL_API_URL}
 UMAY_DASHBOARD_URL=${DASHBOARD_URL}
+AGENT_SERVER_URL=${AGENT_SERVER_URL}
 JWT_SECRET=${JWT_SECRET}
 BACKUP_MASTER_KEY=${BACKUP_MASTER_KEY}
 POSTGRES_DB=umay_db
@@ -80,9 +107,18 @@ docker compose up -d --build
 echo ""
 echo "✅ Umay Monitor Installed Successfully!"
 echo "------------------------------------------"
+echo ""
+echo "🔑 DEFAULT LOGIN"
+echo "   Password: admin"
+echo "   ⚠️  CHANGE THIS PASSWORD IN SETTINGS!"
+echo ""
 
 if [[ "$MODE" == "1" ]]; then
-    echo "Access Dashboard: ${DASHBOARD_URL}"
+    echo "📊 Access Dashboard: ${DASHBOARD_URL}"
+    echo ""
+    echo "📡 Agent Connection:"
+    echo "   Agents will connect to: ${AGENT_SERVER_URL}"
+    echo "   Make sure this IP is reachable from your monitored servers."
 else
     echo "⚠️  ACTION REQUIRED: Configure Nginx/Apache (SSL Termination)"
     echo ""

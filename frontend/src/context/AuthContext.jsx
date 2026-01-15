@@ -45,8 +45,8 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  const login = async (email, password) => {
-    const response = await api.post('/api/auth/login', { email, password });
+  const login = async (password) => {
+    const response = await api.post('/api/auth/login', { password });
 
     const data = response.data;
     localStorage.setItem('authToken', data.token);

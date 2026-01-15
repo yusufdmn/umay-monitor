@@ -26,9 +26,15 @@ api.interceptors.response.use(
     if (!error.response) {
       console.error('Network/API error:', error);
     }
+    // Only redirect on 401 if NOT on the login page and NOT a login request
     if (error.response?.status === 401) {
-      localStorage.clear();
-      window.location.href = '/login';
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      const isOnLoginPage = window.location.pathname === '/login';
+      
+      if (!isLoginRequest && !isOnLoginPage) {
+        localStorage.clear();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

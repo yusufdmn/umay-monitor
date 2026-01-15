@@ -70,6 +70,12 @@ const SettingsPage = () => {
   const [testing, setTesting] = useState(false);
   const [testMsg, setTestMsg] = useState('');
 
+  // Change Password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
   const getErrMsg = (err, fallback) =>
     err?.response?.data?.message || err?.message || fallback;
 
@@ -204,6 +210,37 @@ const SettingsPage = () => {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('All password fields are required');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 4) {
+      toast.error('Password must be at least 4 characters');
+      return;
+    }
+    
+    setChangingPassword(true);
+    try {
+      await api.post('/api/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      toast.error(getErrMsg(err, 'Failed to change password'));
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const enabled = !!settings?.isTelegramEnabled;
   const hasBotToken = !!settings?.hasBotToken;
   const updatedAt = settings?.updatedAtUtc
@@ -235,6 +272,62 @@ const SettingsPage = () => {
         </div>
       )}
       {testMsg && <div className="notice">{testMsg}</div>}
+
+      {/* Change Password Card */}
+      <div className="settings-card">
+        <div className="settings-card-header">
+          <div className="settings-card-title-area">
+            <span className="settings-card-icon">🔐</span>
+            <div>
+              <h2 className="settings-card-title">Change Password</h2>
+              <p className="settings-card-subtitle">Update your admin password</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="settings-card-body">
+          <div className="settings-form-group">
+            <label className="settings-label">Current Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password"
+            />
+          </div>
+          
+          <div className="settings-form-group">
+            <label className="settings-label">New Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+            />
+          </div>
+          
+          <div className="settings-form-group">
+            <label className="settings-label">Confirm New Password</label>
+            <input
+              type="password"
+              className="settings-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm new password"
+            />
+          </div>
+          
+          <button
+            className="btn btn-primary"
+            onClick={handleChangePassword}
+            disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+          >
+            {changingPassword ? 'Changing...' : 'Change Password'}
+          </button>
+        </div>
+      </div>
 
       {/* Agent Configuration */}
       <AgentConfigPanel />

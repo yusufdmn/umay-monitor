@@ -28,10 +28,13 @@ services:
       # 2. INJECT CORS
       ALLOWED_ORIGINS: ${UMAY_DASHBOARD_URL}
       
-      # 3. INJECT DATABASE (Overrides appsettings.json)
+      # 3. INJECT AGENT SERVER URL (for agent installer scripts)
+      AGENT_SERVER_URL: ${AGENT_SERVER_URL}
+      
+      # 4. INJECT DATABASE (Overrides appsettings.json)
       ConnectionStrings__DefaultConnection: "Server=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
       
-      # 4. INJECT SECRETS (Overrides appsettings.json)
+      # 5. INJECT SECRETS (Overrides appsettings.json)
       # Note the double underscore __ replaces the colon : in JSON
       JwtSettings__SecretKey: ${JWT_SECRET}
       BackupEncryption__MasterKey: ${BACKUP_MASTER_KEY}

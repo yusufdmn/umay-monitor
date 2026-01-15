@@ -14,32 +14,16 @@ public static class DatabaseSeeder
 
         await dbContext.Database.MigrateAsync();
 
-        // Seed test server
-        if (!await dbContext.MonitoredServers.AnyAsync())
-        {
-            var testServer = new MonitoredServer
-            {
-                Name = "Ankara",
-                Hostname = "Ankara-01",
-                AgentToken = "test-token-123",
-                IsOnline = false,
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            dbContext.MonitoredServers.Add(testServer);
-            await dbContext.SaveChangesAsync();
-            
-            logger.LogInformation("Test server seeded successfully");
-        }
-
-        // Seed default admin user
-        if (!await dbContext.Users.AnyAsync())
+        // Seed default admin user or update existing
+        var existingUser = await dbContext.Users.FirstOrDefaultAsync();
+        
+        if (existingUser == null)
         {
             var adminUser = new User
             {
-                Email = "admin@example.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-                FullName = "System Administrator",
+                Email = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
+                FullName = "Administrator",
                 Role = "Admin",
                 IsActive = true,
                 CreatedAtUtc = DateTime.UtcNow
@@ -49,9 +33,23 @@ public static class DatabaseSeeder
             await dbContext.SaveChangesAsync();
             
             logger.LogInformation("========================================");
-            logger.LogInformation("DEFAULT ADMIN USER CREATED:");
-            logger.LogInformation("Email: admin@localhost");
-            logger.LogInformation("Password: Admin123!");
+            logger.LogInformation("DEFAULT ADMIN USER CREATED");
+            logger.LogInformation("Password: admin");
+            logger.LogInformation("⚠️  CHANGE THIS PASSWORD IMMEDIATELY!");
+            logger.LogInformation("========================================");
+        }
+        else if (existingUser.Email != "admin")
+        {
+            // Migrate old user format to new single-user format
+            existingUser.Email = "admin";
+            existingUser.FullName = "Administrator";
+            existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin");
+            await dbContext.SaveChangesAsync();
+            
+            logger.LogInformation("========================================");
+            logger.LogInformation("ADMIN USER MIGRATED TO NEW FORMAT");
+            logger.LogInformation("Password has been reset to: admin");
+            logger.LogInformation("⚠️  CHANGE THIS PASSWORD IMMEDIATELY!");
             logger.LogInformation("========================================");
         }
     }

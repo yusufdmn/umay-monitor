@@ -61,15 +61,33 @@ public class AgentsController : ControllerBase
             server.Name, server.Id);
 
         // Build install command URL
+        // Use configured AGENT_SERVER_URL if available, otherwise use request host
+        var agentServerUrl = Environment.GetEnvironmentVariable("AGENT_SERVER_URL");
+        string installHost;
+        string installScheme;
+        
+        if (!string.IsNullOrEmpty(agentServerUrl))
+        {
+            var uri = new Uri(agentServerUrl);
+            installHost = uri.IsDefaultPort ? uri.Host : $"{uri.Host}:{uri.Port}";
+            // ws:// -> http://, wss:// -> https://
+            installScheme = uri.Scheme == "wss" ? "https" : "http";
+        }
+        else
+        {
+            installHost = Request.Host.Value;
+            installScheme = Request.Scheme;
+        }
+        
         var installScriptUrl = Url.Action(
             action: "GetInstallScript",
             controller: "Agents",
             values: new { agentId = server.Id, token = plainToken },
-            protocol: Request.Scheme,
-            host: Request.Host.Value
+            protocol: installScheme,
+            host: installHost
         );
 
-        var installCommand = Request.Scheme == "https"
+        var installCommand = installScheme == "https"
             ? $"curl -skL {installScriptUrl} | sudo bash"
             : $"curl -sL {installScriptUrl} | sudo bash";
 
@@ -119,12 +137,29 @@ public class AgentsController : ControllerBase
 
         var template = await System.IO.File.ReadAllTextAsync(templatePath);
 
-        // Auto-detect domain and port from the incoming request
-        // This works correctly for:
-        // - localhost:7286 (local development)
-        // - localhost:8765 (SSH tunnel)
-        // - api.yourdomain.com (production)
-        var domainWithPort = Request.Host.Value;
+        // Get the agent server URL from environment (set by docker-compose)
+        // This is the URL that agents on OTHER machines will use to connect
+        // Falls back to auto-detection from request if not configured
+        var agentServerUrl = Environment.GetEnvironmentVariable("AGENT_SERVER_URL");
+        string domainWithPort;
+        
+        if (!string.IsNullOrEmpty(agentServerUrl))
+        {
+            // Extract host:port from the URL (e.g., "ws://192.168.1.100:5123" -> "192.168.1.100:5123")
+            var uri = new Uri(agentServerUrl);
+            domainWithPort = uri.IsDefaultPort ? uri.Host : $"{uri.Host}:{uri.Port}";
+            _logger.LogInformation("Using configured AGENT_SERVER_URL: {Url} -> {Domain}", agentServerUrl, domainWithPort);
+        }
+        else
+        {
+            // Auto-detect domain and port from the incoming request (legacy behavior)
+            // This works correctly for:
+            // - localhost:7286 (local development)
+            // - localhost:8765 (SSH tunnel)
+            // - api.yourdomain.com (production)
+            domainWithPort = Request.Host.Value;
+            _logger.LogInformation("AGENT_SERVER_URL not configured, using request host: {Domain}", domainWithPort);
+        }
 
         // Replace placeholders (inject PLAIN token into script)
         var script = template

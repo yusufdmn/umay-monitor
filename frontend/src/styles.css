@@ -1271,6 +1271,35 @@ button {
   font-size: 0.875rem;
 }
 
+.settings-card-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  max-width: 600px;
+}
+
+.settings-form-group {
+  margin-bottom: 1rem;
+}
+
+.settings-form-group:last-of-type {
+  margin-bottom: 1.25rem;
+}
+
+.settings-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-bottom: 0.4rem;
+}
+
+.settings-form-group .settings-input {
+  max-width: 100%;
+}
+
+.settings-form-group .btn {
+  max-width: 200px;
+}
+
 .settings-updated-badge {
   display: inline-flex;
   align-items: center;

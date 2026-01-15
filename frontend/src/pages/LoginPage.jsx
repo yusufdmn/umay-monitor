@@ -12,16 +12,15 @@ const LoginPage = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  const handleSubmit = async (email, password) => {
+  const handleSubmit = async (password) => {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(password);
       navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
-      setError('Invalid email or password');
-    } finally {
+      setError('Invalid password');
       setLoading(false);
     }
   };

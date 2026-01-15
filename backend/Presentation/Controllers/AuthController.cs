@@ -25,17 +25,17 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticates a user and returns a JWT token.
     /// </summary>
-    /// <param name="request">Login credentials (email + password).</param>
+    /// <param name="request">Login credentials (password only).</param>
     /// <returns>JWT token and user information if successful.</returns>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        _logger.LogInformation("Login attempt for email: {Email}", request.Email);
+        _logger.LogInformation("Login attempt");
         
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Login failed for {Email}: Invalid model state", request.Email);
+            _logger.LogWarning("Login failed: Invalid model state");
             return BadRequest(ModelState);
         }
 
@@ -43,12 +43,40 @@ public class AuthController : ControllerBase
 
         if (response == null)
         {
-            _logger.LogWarning("Login failed for {Email}: Invalid credentials", request.Email);
-            return Unauthorized(new { message = "Invalid email or password" });
+            _logger.LogWarning("Login failed: Invalid credentials");
+            return Unauthorized(new { message = "Invalid password" });
         }
 
-        _logger.LogInformation("Login successful for {Email}, UserId: {UserId}", request.Email, response.User.Id);
+        _logger.LogInformation("Login successful, UserId: {UserId}", response.User.Id);
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Changes the admin user's password.
+    /// </summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest(new { message = "Current password and new password are required" });
+        }
+
+        if (request.NewPassword.Length < 4)
+        {
+            return BadRequest(new { message = "New password must be at least 4 characters" });
+        }
+
+        var success = await _authService.ChangePasswordAsync(request.CurrentPassword, request.NewPassword);
+
+        if (!success)
+        {
+            return BadRequest(new { message = "Current password is incorrect" });
+        }
+
+        _logger.LogInformation("Password changed successfully");
+        return Ok(new { message = "Password changed successfully" });
     }
 
     /// <summary>

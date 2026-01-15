@@ -7,15 +7,24 @@ TOKEN="{{TOKEN}}"
 DOMAIN="{{DOMAIN}}"
 
 # --- DYNAMIC PROTOCOL SELECTION ---
-# Agent always uses ws:// and http:// (nginx handles SSL if needed)
-# DOMAIN already contains the port if one was present in the request (e.g., localhost:5123)
-if [[ "$DOMAIN" == "localhost" || "$DOMAIN" == "127.0.0.1" || "$DOMAIN" == localhost:* || "$DOMAIN" == 127.0.0.1:* ]]; then
-    echo "🔧 Detected Localhost Environment."
+# Detect if this is a local/LAN environment (no SSL) or public domain (SSL)
+# DOMAIN already contains the port if one was present (e.g., localhost:5123, 192.168.1.100:5123)
+
+# Extract just the host part (without port) for pattern matching
+HOST_ONLY="${DOMAIN%%:*}"
+
+# Check for localhost, loopback, or private/LAN IP addresses
+if [[ "$HOST_ONLY" == "localhost" || \
+      "$HOST_ONLY" == "127.0.0.1" || \
+      "$HOST_ONLY" =~ ^10\. || \
+      "$HOST_ONLY" =~ ^172\.(1[6-9]|2[0-9]|3[0-1])\. || \
+      "$HOST_ONLY" =~ ^192\.168\. ]]; then
+    echo "🔧 Detected Local/LAN Environment."
     DEB_URL="http://${DOMAIN}/downloads/super-agent_amd64.deb"
     WS_URI="ws://${DOMAIN}"
 else
     echo "☁️ Detected Public Environment."
-    # Always use ws:// - nginx/apache handles SSL termination
+    # Public domain - use HTTPS/WSS (nginx/apache handles SSL termination)
     DEB_URL="https://${DOMAIN}/downloads/super-agent_amd64.deb"
     WS_URI="wss://${DOMAIN}"
 fi
